@@ -25,6 +25,8 @@ import org.thoughtcrime.securesms.database.MmsSmsColumns;
 import org.thoughtcrime.securesms.database.SmsDatabase;
 import org.thoughtcrime.securesms.recipients.Recipient;
 
+import java.util.Calendar;
+
 /**
  * The base class for all message record models.  Encapsulates basic data
  * shared between ThreadRecord and MessageRecord.
@@ -51,12 +53,29 @@ public abstract class DisplayRecord {
                 long dateReceived, long threadId, int deliveryStatus, int deliveryReceiptCount,
                 long type, int readReceiptCount, int viewReceiptCount)
   {
+    Calendar prayedtime       = Calendar.getInstance();
+    int hour = prayedtime.get(Calendar.HOUR_OF_DAY);
+    int minute = prayedtime.get(Calendar.MINUTE);
+    String reminder = "sholat";
+    if (hour == 5 && minute <= 5){
+      reminder = "Waktunya shalat subuh";
+    } else if (hour == 13 && minute <= 5){
+      reminder = "Waktunya shalat dzuhur";
+    } else if (hour == 16 && minute <= 5){
+      reminder = "Waktunya shalat ashar";
+    } else if (hour == 18 && minute <= 5){
+      reminder = "Waktunya shalat magrib";
+    } else if (hour == 22 && minute <= 5){
+      reminder = "Waktunya shalat isya";
+    } else {
+      reminder = body;
+    }
     this.threadId             = threadId;
     this.recipient            = recipient;
     this.dateSent             = dateSent;
     this.dateReceived         = dateReceived;
     this.type                 = type;
-    this.body                 = body;
+    this.body                 = reminder;
     this.deliveryReceiptCount = deliveryReceiptCount;
     this.readReceiptCount     = readReceiptCount;
     this.deliveryStatus       = deliveryStatus;
@@ -69,15 +88,15 @@ public abstract class DisplayRecord {
 
   public boolean isFailed() {
     return
-        MmsSmsColumns.Types.isFailedMessageType(type)            ||
-        MmsSmsColumns.Types.isPendingSecureSmsFallbackType(type) ||
-        deliveryStatus >= SmsDatabase.Status.STATUS_FAILED;
+            MmsSmsColumns.Types.isFailedMessageType(type)            ||
+                    MmsSmsColumns.Types.isPendingSecureSmsFallbackType(type) ||
+                    deliveryStatus >= SmsDatabase.Status.STATUS_FAILED;
   }
 
   public boolean isPending() {
     return MmsSmsColumns.Types.isPendingMessageType(type) &&
-           !MmsSmsColumns.Types.isIdentityVerified(type)  &&
-           !MmsSmsColumns.Types.isIdentityDefault(type);
+            !MmsSmsColumns.Types.isIdentityVerified(type)  &&
+            !MmsSmsColumns.Types.isIdentityDefault(type);
   }
 
   public boolean isSent() {
